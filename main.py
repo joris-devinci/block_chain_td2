@@ -9,7 +9,7 @@ BIP39_REVERSE_DICT = {value:key for key, value in BIP39_DICT.items()}
 
 def generate_seed() -> list[str]: # 12 words
 
-    print("Generating seed")
+    print("Generating seed:")
 
     entropic = secrets.randbits(128)
     entropic_bits = [(entropic >> i) & 1 for i in range(entropic.bit_length() - 1, -1, -1)]
@@ -34,12 +34,25 @@ def generate_seed() -> list[str]: # 12 words
 
     return words_list
 
-# def get_root_seet(words_list: list[str]) -> tuple[int, int, int]:
+def get_root_seed(words_list: list[str]) -> bytes:
+    print(f"Getting the Mnemonics root seed:\n")
 
-#     index_list = []
-#     for word in words_list:
-#         index_list.append()
-    
+    index_list = []
+    for word in words_list:
+        index_list.append(BIP39_REVERSE_DICT[word])
+    print(f"Index list = \n{index_list}\n")
+
+    bits_list = [(index >> i) & 1 for index in index_list for i in range(7, -1, -1)]
+    print(f"Bits list = \n{bits_list}\n")
+
+    root_seed_list = bits_list[:-4]
+    print(f"Root list = \n{root_seed_list}\n")
+
+    root_seed = bytes(
+        int("".join(map(str, root_seed_list[i:i+8])), 2)
+        for i in range(0, len(root_seed_list), 8)
+    )
+    print(f"Root seed = {root_seed}\n")
 
 def generate_wallet(seed: list[bytes]) -> tuple[int, int, int]: # tuple(master private key, master chain key, master public key)
     pass
@@ -56,8 +69,8 @@ def generate_child(private_key, public_key, chain_key, index) -> tuple[int, int,
 
     # Generate public key
 
-
-generate_seed()
+get_root_seed(["seven", "bundle", "scrub", "diesel", "present", "vital", "mountain", "rhythm", "fork", "scan", "predict", "bullet"])
+# generate_seed()
 
 # while True:
 
