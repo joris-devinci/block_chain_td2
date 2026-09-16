@@ -7,32 +7,36 @@ with open("bip39_list.txt", "r") as file:
         BIP39_DICT[i] = line.strip()
 BIP39_REVERSE_DICT = {value:key for key, value in BIP39_DICT.items()}
 
+
+
 def generate_seed() -> list[str]: # 12 words
 
     print("Generating seed:")
 
     entropic = secrets.randbits(128)
     entropic_bits = [(entropic >> i) & 1 for i in range(entropic.bit_length() - 1, -1, -1)]
-    # print(f"Entropic bits = \n{entropic_bits}\n")
+    print(f"Entropic bits = \n{entropic_bits}\n")
 
     digest = hashlib.sha256(entropic.to_bytes(16, "big")).digest()
     digest_bits = [(byte >> i) & 1 for byte in digest for i in range(7, -1, -1)]
-    # print(f"Hash digest bits = \n{digest_bits}\n")
+    print(f"Hash digest bits = \n{digest_bits}\n")
 
     combined_bits = entropic_bits + digest_bits[:4]
-    # print(f"Entropic combined with checksome = \n{combined_bits}\n")
+    print(f"Entropic combined with checksome = \n{combined_bits}\n")
 
     index_list = []
     for i in range(11, 132+1, 11):
         index = "".join(str(val) for val in combined_bits[i-11:i])
         index_value = int(index, 2)
         index_list.append(index_value)
-    # print(f"Index list \n{index_list}\n")
+    print(f"Index list \n{index_list}\n")
 
     words_list = [BIP39_DICT[index] for index in index_list]
     print(f"Word list = {" ".join(words_list)}")
 
     return words_list
+
+
 
 def get_root_seed(words_list: list[str]) -> bytes:
     print(f"Getting the Mnemonics root seed:\n")
@@ -42,7 +46,7 @@ def get_root_seed(words_list: list[str]) -> bytes:
         index_list.append(BIP39_REVERSE_DICT[word])
     print(f"Index list = \n{index_list}\n")
 
-    bits_list = [(index >> i) & 1 for index in index_list for i in range(7, -1, -1)]
+    bits_list = [(index >> i) & 1 for index in index_list for i in range(10, -1, -1)]
     print(f"Bits list = \n{bits_list}\n")
 
     root_seed_list = bits_list[:-4]
@@ -53,8 +57,10 @@ def get_root_seed(words_list: list[str]) -> bytes:
         for i in range(0, len(root_seed_list), 8)
     )
     print(f"Root seed = {root_seed}\n")
+    return root_seed
 
-def generate_wallet(seed: list[bytes]) -> tuple[int, int, int]: # tuple(master private key, master chain key, master public key)
+
+def generate_wallet(seed: bytes) -> tuple[int, int, int]: # tuple(master private key, master chain key, master public key)
     pass
 
     # Generate the master private key and master chain key from the seed
@@ -69,7 +75,8 @@ def generate_child(private_key, public_key, chain_key, index) -> tuple[int, int,
 
     # Generate public key
 
-get_root_seed(["seven", "bundle", "scrub", "diesel", "present", "vital", "mountain", "rhythm", "fork", "scan", "predict", "bullet"])
+# generate_seed()
+get_root_seed(["winter", "tree", "talent", "plug", "flavor", "horror", "intact", "weird", "loyal", "turtle", "city", "comfort"])
 # generate_seed()
 
 # while True:
