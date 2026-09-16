@@ -12,7 +12,7 @@ def generate_seed(mnemonic:list[str]) -> list[bytes]: # 12 words
 
 
 
-def generate_wallet(seed: list[str]) -> tuple[int, int, int]: # tuple(master private key, master chain key, master public key)
+def generate_wallet(seed: list[bytes]) -> tuple[int, int, int]: # tuple(master private key, master chain key, master public key)
     pass
 
     # Generate the master private key and master chain key from the seed
