@@ -1,5 +1,7 @@
 import secrets
 import hashlib
+import hmac
+from ecdsa import SigningKey, SECP256k1
 
 BIP39_DICT = {}
 with open("bip39_list.txt", "r") as file:
@@ -60,12 +62,29 @@ def get_root_seed(words_list: list[str]) -> bytes:
     return root_seed
 
 
-def generate_wallet(seed: bytes) -> tuple[int, int, int]: # tuple(master private key, master chain key, master public key)
-    pass
-
+def generate_wallet() -> tuple[bytes, bytes, bytes]: # tuple(master private key, master chain key, master public key)
     # Generate the master private key and master chain key from the seed
-
     # Extract master public key
+
+    value = input("give me the words")
+    words_list = value.split(" ")
+    seed = get_root_seed(words_list)
+
+    hmac_output = hmac.new(b"Bitcoin seed", seed, "sha512").digest()
+    
+    print('\n', 'hmac output after hashing the seed : ', hmac_output, '\n')
+
+    masterprivatekey, masterchaincode = hmac_output[:32], hmac_output[32:]
+
+    scalar = SigningKey.from_string(masterprivatekey, curve = SECP256k1)
+
+    ecc = scalar.get_verifying_key() 
+
+    masterpublickey = ecc.to_string("compressed") # 64 -> 32 bytes
+
+    print('master public key obtained after ECC : ', masterpublickey, '\n')
+
+    return masterprivatekey, masterchaincode, masterpublickey
 
 
 def generate_child(private_key, public_key, chain_key, index) -> tuple[int, int, int]:  # tuple(master private key, master chain key, master public key)
@@ -76,25 +95,25 @@ def generate_child(private_key, public_key, chain_key, index) -> tuple[int, int,
     # Generate public key
 
 # generate_seed()
-get_root_seed(["winter", "tree", "talent", "plug", "flavor", "horror", "intact", "weird", "loyal", "turtle", "city", "comfort"])
+# get_root_seed(["winter", "tree", "talent", "plug", "flavor", "horror", "intact", "weird", "loyal", "turtle", "city", "comfort"])
 # generate_seed()
 
-# while True:
+while True:
 
-#     value = input("What do you want to do?\n" \
-#     "               1. Generate a key\n" \
-#     "               2. Create a wallet\n" \
-#     "               3. Create child keys\n" \
-#     "               4. Exit")
+    value = input("What do you want to do?\n" \
+    "               1. Generate a key\n" \
+    "               2. Create a wallet\n" \
+    "               3. Create child keys\n" \
+    "               4. Exit")
 
-#     match value:
-#         case "1":
-#             pass
-#         case "2":
-#             pass
-#         case "3":
-#             pass
-#         case "4":
-#             break
-#         case _:
-#             print("Nothing good seleceted")
+    match value:
+        case "1":
+            generate_seed()
+        case "2":
+            generate_wallet()
+        case "3":
+            pass
+        case "4":
+            break
+        case _:
+            print("Nothing good seleceted")
