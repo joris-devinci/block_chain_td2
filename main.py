@@ -56,12 +56,12 @@ def get_root_seed(words_list: list[str]) -> bytes:
     print(f"Root list = \n{root_seed_list}\n")
 
     checksum = bits_list[-4:]
-    print(f"Checksum = \n{checksum}")
+    print(f"Checksum = \n{checksum}\n")
 
     digest = hashlib.sha256(root_seed.to_bytes(16, "big")).digest()
     digest_bits = [(byte >> i) & 1 for byte in digest for i in range(7, -1, -1)]
     digest_checksum = digest_bits[:4]
-    print(f"Digest checksum = \n{digest_checksum}\n")
+    print(f"Checksum from digest from the root seed = \n{digest_checksum}\n")
 
     if checksum != digest_checksum:
         raise ValueError("Invaled words did not pass the checksum")
@@ -105,26 +105,36 @@ def generate_child(private_key, public_key, chain_key, index) -> tuple[int, int,
 
     # Generate public key
 
+
+# ========================================
+# TEST FUNCTIONS
+# ========================================
+
 # generate_seed()
-get_root_seed(["winter", "tree", "talent", "plug", "flavor", "horror", "intact", "weird", "loyal", "turtle", "city", "comfort"])
-# generate_seed()
+# get_root_seed(["winter", "tree", "talent", "plug", "flavor", "horror", "intact", "weird", "loyal", "turtle", "city", "comfort"])
 
-# while True:
 
-#     value = input("\nWhat do you want to do?\n" \
-#     "               1. Generate a seed\n" \
-#     "               2. Create a wallet\n" \
-#     "               3. Create child keys\n" \
-#     "               4. Exit\n")
 
-#     match value:
-#         case "1":
-#             generate_seed()
-#         case "2":
-#             generate_wallet()
-#         case "3":
-#             generate_child()
-#         case "4":
-#             break
-#         case _:
-#             print("\nYou seleceted a invalid option please select (1, 2, 3 or 4)\n")
+# ========================================
+# WHILE LOOP
+# ========================================
+
+while True:
+    
+    value = input("\nWhat do you want to do?\n" \
+    "               1. Generate a seed\n" \
+    "               2. Create a wallet\n" \
+    "               3. Create child keys\n" \
+    "               4. Exit\n")
+
+    match value:
+        case "1":
+            generate_seed()
+        case "2":
+            generate_wallet()
+        case "3":
+            generate_child()
+        case "4":
+            break
+        case _:
+            print("\nYou seleceted a invalid option please select (1, 2, 3 or 4)\n")
