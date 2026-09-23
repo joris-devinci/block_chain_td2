@@ -13,7 +13,7 @@ BIP39_REVERSE_DICT = {value:key for key, value in BIP39_DICT.items()}
 
 def generate_seed() -> list[str]: # 12 words
 
-    print("Generating seed:")
+    print("=====Generating seed=====")
 
     entropic = secrets.randbits(128)
     entropic_bits = [(entropic >> i) & 1 for i in range(entropic.bit_length() - 1, -1, -1)]
@@ -41,7 +41,7 @@ def generate_seed() -> list[str]: # 12 words
 
 
 def get_root_seed(words_list: list[str]) -> bytes:
-    print(f"Getting the Mnemonics root seed:\n")
+    print(f"=====Getting the Mnemonics root seed=====\n")
 
     index_list = []
     for word in words_list:
@@ -52,7 +52,19 @@ def get_root_seed(words_list: list[str]) -> bytes:
     print(f"Bits list = \n{bits_list}\n")
 
     root_seed_list = bits_list[:-4]
+    root_seed = int("".join(map(str, root_seed_list)), 2)
     print(f"Root list = \n{root_seed_list}\n")
+
+    checksum = bits_list[-4:]
+    print(f"Checksum = \n{checksum}\n")
+
+    digest = hashlib.sha256(root_seed.to_bytes(16, "big")).digest()
+    digest_bits = [(byte >> i) & 1 for byte in digest for i in range(7, -1, -1)]
+    digest_checksum = digest_bits[:4]
+    print(f"Checksum from digest from the root seed = \n{digest_checksum}\n")
+
+    if checksum != digest_checksum:
+        raise ValueError("Invaled words did not pass the checksum")
 
     root_seed = bytes(
         int("".join(map(str, root_seed_list[i:i+8])), 2)
@@ -63,18 +75,19 @@ def get_root_seed(words_list: list[str]) -> bytes:
 
 
 def generate_wallet() -> tuple[bytes, bytes, bytes]: # tuple(master private key, master chain key, master public key)
-    # Generate the master private key and master chain key from the seed
-    # Extract master public key
 
-    value = input("give me the words")
+    value = input("Plz give me the Mnemonics words: ")
     words_list = value.split(" ")
     seed = get_root_seed(words_list)
 
+    print("\n=====Generating a Wallet=====\n")
+
     hmac_output = hmac.new(b"Bitcoin seed", seed, "sha512").digest()
-    
-    print('\n', 'hmac output after hashing the seed : ', hmac_output, '\n')
+    print(f"HMAC output = \n{hmac_output}")
 
     masterprivatekey, masterchaincode = hmac_output[:32], hmac_output[32:]
+    print(f"Master private key = \n{masterprivatekey}\n")
+    print(f"Master chain code = \n{masterchaincode}\n")
 
     masterpublickey = SigningKey.from_string(masterprivatekey, curve=SECP256k1).get_verifying_key().to_string(
         "compressed") # 64 -> 32 bytes
@@ -108,16 +121,27 @@ def generate_child(parentprivatekey: bytes, parentpublickey: bytes, parentchainc
 
     return childprivatekey, childchaincode, childpublickey
 
+
+# ========================================
+# TEST FUNCTIONS
+# ========================================
+
 # generate_seed()
 # get_root_seed(["winter", "tree", "talent", "plug", "flavor", "horror", "intact", "weird", "loyal", "turtle", "city", "comfort"])
-# generate_seed()
+
+
+
+# ========================================
+# WHILE LOOP
+# ========================================
 
 while True:
-    value = input("What do you want to do?\n" \
-    "               1. Generate a key\n" \
+
+    value = input("\nWhat do you want to do?\n" \
+    "               1. Generate a seed\n" \
     "               2. Create a wallet\n" \
     "               3. Create child keys\n" \
-    "               4. Exit")
+    "               4. Exit\n")
 
     match value:
         case "1":
@@ -131,4 +155,4 @@ while True:
         case "4":
             break
         case _:
-            print("Nothing good seleceted")
+            print("\nYou seleceted a invalid option please select (1, 2, 3 or 4)\n")
