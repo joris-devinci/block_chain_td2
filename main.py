@@ -76,30 +76,43 @@ def generate_wallet() -> tuple[bytes, bytes, bytes]: # tuple(master private key,
 
     masterprivatekey, masterchaincode = hmac_output[:32], hmac_output[32:]
 
-    scalar = SigningKey.from_string(masterprivatekey, curve = SECP256k1)
-
-    ecc = scalar.get_verifying_key() 
-
-    masterpublickey = ecc.to_string("compressed") # 64 -> 32 bytes
+    masterpublickey = SigningKey.from_string(masterprivatekey, curve=SECP256k1).get_verifying_key().to_string(
+        "compressed") # 64 -> 32 bytes
 
     print('master public key obtained after ECC : ', masterpublickey, '\n')
 
     return masterprivatekey, masterchaincode, masterpublickey
 
 
-def generate_child(private_key, public_key, chain_key, index) -> tuple[int, int, int]:  # tuple(master private key, master chain key, master public key)
-    pass
+def generate_child(parentprivatekey: bytes, parentpublickey: bytes, parentchaincode: bytes, index: int) -> tuple[bytes, bytes, bytes]:
 
-    # Genertate private and chain key
+    data = parentpublickey + index.to_bytes(4, "big")
 
-    # Generate public key
+    hmac_output = hmac.new(parentchaincode, data, "sha512").digest()
+
+    var, childchaincode = hmac_output[:32], hmac_output[32:]
+
+    var_int = int.from_bytes(var, "big")
+
+    child_int = (var_int + int.from_bytes(parentprivatekey, "big")) % SECP256k1.order
+
+    if var_int >= SECP256k1.order or child_int == 0:
+        raise ValueError("invalid index")
+
+    childprivatekey = child_int.to_bytes(32, "big")
+
+    childpublickey = SigningKey.from_string(childprivatekey, curve=SECP256k1).get_verifying_key().to_string("compressed")
+
+    print("child private key : ", childprivatekey, '\n' "child chain code : ",
+          childchaincode, '\n', "child public key", childpublickey, '\n')
+
+    return childprivatekey, childchaincode, childpublickey
 
 # generate_seed()
 # get_root_seed(["winter", "tree", "talent", "plug", "flavor", "horror", "intact", "weird", "loyal", "turtle", "city", "comfort"])
 # generate_seed()
 
 while True:
-
     value = input("What do you want to do?\n" \
     "               1. Generate a key\n" \
     "               2. Create a wallet\n" \
@@ -112,7 +125,9 @@ while True:
         case "2":
             generate_wallet()
         case "3":
-            pass
+            masterprivatekey, masterchaincode, masterpublickey = generate_wallet()
+            index_int = int(input("enter index"))
+            generate_child(masterprivatekey, masterchaincode, masterpublickey, index_int)
         case "4":
             break
         case _:
