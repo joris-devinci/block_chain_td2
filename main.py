@@ -150,7 +150,7 @@ while True:
             generate_wallet()
         case "3":
             masterprivatekey, masterchaincode, masterpublickey = generate_wallet()
-            index_int = int(input("enter index"))
+            index_int = int(input("Enter index: "))
             generate_child(masterprivatekey, masterchaincode, masterpublickey, index_int)
         case "4":
             break
